@@ -11,7 +11,7 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   salt: string;
-  subscription: ISubscription; 
+  subscription: ISubscription["_id"];
 }
 
 const userSchema: Schema = new mongoose.Schema({
@@ -40,10 +40,9 @@ const userSchema: Schema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  subscription: { 
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Subscription',
-    default: 'free' 
+  subscription: {
+    type: Schema.Types.ObjectId,
+    ref: "Subscription"
   },
   createdAt: { 
     type: Date, default: Date.now 
