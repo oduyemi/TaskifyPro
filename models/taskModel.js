@@ -31,7 +31,7 @@ const taskSchema = new mongoose_1.default.Schema({
     },
     task_category_id: {
         type: mongoose_1.default.Schema.Types.ObjectId,
-        ref: 'Categories',
+        ref: "Categories",
         required: true,
     },
     description: {
@@ -59,7 +59,7 @@ const taskSchema = new mongoose_1.default.Schema({
     },
     user: {
         type: mongoose_1.Schema.Types.ObjectId,
-        ref: 'User'
+        ref: "User"
     }
 }, { timestamps: true });
 const Task = mongoose_1.default.model("Task", taskSchema);

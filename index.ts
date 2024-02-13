@@ -1,6 +1,6 @@
 import express, { Application } from "express";
 import bodyParser from "body-parser";
-require('dotenv').config();
+require("dotenv").config();
 import cors from "cors";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import fetchRouter from "./routes/fetch";

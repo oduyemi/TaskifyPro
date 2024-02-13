@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
+import { ISubscription } from "./subscriptionModel";
 
 export interface IUser extends Document {
   user_id: mongoose.Types.ObjectId;
@@ -6,10 +7,11 @@ export interface IUser extends Document {
   lname: string;
   email: string;
   phone: string;
-  password: string; 
+  password: string;
   createdAt: Date;
   updatedAt: Date;
   salt: string;
+  subscription: ISubscription; 
 }
 
 const userSchema: Schema = new mongoose.Schema({
@@ -38,21 +40,19 @@ const userSchema: Schema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  subscription: { 
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Subscription',
+    default: 'free' 
+  },
   createdAt: { 
     type: Date, default: Date.now 
   },
   updatedAt: { 
     type: Date, default: Date.now
-  },
-  subscriptions:[{
-    type: Schema.Types.ObjectId, ref: 'Subscription'
-  }]},
-  {
-   timestamps: true
   }
-);
+});
 
 const User = mongoose.model<IUser>("User", userSchema);
-
 
 export default User;

@@ -19,7 +19,7 @@ const taskSchema: Schema = new mongoose.Schema({
   },
   task_category_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Categories', 
+    ref: "Categories", 
     required: true,
   },
   description: {
@@ -47,7 +47,7 @@ const taskSchema: Schema = new mongoose.Schema({
   },
   user: {
     type: Schema.Types.ObjectId,
-    ref: 'User'
+    ref: "User"
   }
   },
   { timestamps: true }
