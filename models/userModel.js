@@ -59,7 +59,12 @@ const userSchema = new mongoose_1.default.Schema({
     },
     updatedAt: {
         type: Date, default: Date.now
-    }
+    },
+    status: {
+        type: String,
+        enum: ["free", "paid"],
+        default: "free"
+    },
 });
 const User = mongoose_1.default.model("User", userSchema);
 exports.default = User;

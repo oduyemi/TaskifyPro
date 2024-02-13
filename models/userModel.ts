@@ -11,7 +11,8 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   salt: string;
-  subscription: ISubscription["_id"];
+  subscription?: mongoose.Types.ObjectId;
+  status: string;
 }
 
 const userSchema: Schema = new mongoose.Schema({
@@ -49,7 +50,12 @@ const userSchema: Schema = new mongoose.Schema({
   },
   updatedAt: { 
     type: Date, default: Date.now
-  }
+  },
+  status: {
+    type: String,
+    enum: ["free", "paid"],
+    default: "free"
+  },
 });
 
 const User = mongoose.model<IUser>("User", userSchema);

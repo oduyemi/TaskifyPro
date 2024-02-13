@@ -1,8 +1,10 @@
 import express, { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import twilio from "twilio";
 import { hash, compare } from "bcrypt";
+import twilio from "twilio";
+import Stripe from "stripe";
 import Task, { ITask } from "../models/taskModel.js";
+import mongoose, { Schema, Document } from "mongoose";
 import TaskCategory, { ITaskCategory} from "../models/taskCategoryModel.js";
 import Subscription, { ISubscription} from "../models/subscriptionModel.js";
 import User, { IUser } from "../models/userModel.js";
@@ -13,15 +15,25 @@ const router = express.Router();
 const { accountSid, authToken } = process.env;
 const client = twilio(accountSid, authToken);
 
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY!;
+const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+
+const stripeClient = new Stripe(stripeSecretKey!, {
+    apiVersion: "2023-10-16",
+  });
+  
+  
+  
+
 require("dotenv").config();
 
 interface UserSession {
-    userID: number; 
+    userID: mongoose.Types.ObjectId; 
     fname: string;
     lname: string;
     email: string;
     phone: string;
-    subscription: ISubscription; 
+    subscription?: mongoose.Types.ObjectId;
   }
   
   interface RegistrationPinSession {
@@ -30,7 +42,7 @@ interface UserSession {
   }
 
   interface AdminSession {
-    adminID: number;
+    adminID: mongoose.Types.ObjectId;
     fname: string;
     lname: string;
     email: string;
@@ -365,23 +377,86 @@ router.post("/task-categories", async (req: Request, res: Response) => {
 });
 
 
-router.post("/subscriptions", async (req: Request, res: Response) => {
+router.post("/subscribe", async (req: Request, res: Response) => {
     try {
-        const { name, description, price } = req.body;
-        if (![name, description, price].every((field) => field)) {
-            return res.status(400).json({ message: "All fields are required" });
+        if (!req.session || !req.session.user) {
+            return res.status(401).json({ message: "User not authenticated" });
         }
 
-        // New subscription
-        const newSubscription = new Subscription({ name, description, price });
-        await newSubscription.save();
+        const user: IUser | null = await User.findById(req.session.user.userID);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
 
-        return res.status(201).json({ message: "Subscription created successfully", subscription: newSubscription });
+        // Construct event object from the request
+        const sig: string | string[] | undefined = req.headers["stripe-signature"];
+        const stripeWebhookSecret: string = "your-stripe-webhook-secret"; // Ensure this is defined
+
+        let event;
+
+        try {
+            const requestBody = JSON.stringify(req.body);
+            event = stripeClient.webhooks.constructEvent(requestBody, sig as string, stripeWebhookSecret);
+        } catch (err: any) {
+            console.error("Error verifying webhook signature:", err.message);
+            return res.status(400).send(`Webhook Error: ${err.message}`);
+        }
+
+        switch (event.type) {
+            case "payment_intent.succeeded":
+                // Update user status to PAID in the db
+                user.status = "paid";
+                await user.save();
+                console.log("User status updated to 'paid'");
+                break;
+        }
+
+        res.status(200).json({ received: true });
     } catch (error) {
-        console.error("Error creating subscription:", error);
-        return res.status(500).json({ message: "Error creating subscription" });
+        console.error("Error processing webhook event:", error);
+        res.status(500).json({ message: "Error processing webhook event" });
     }
 });
+
+ // Stripe webhook events
+router.post("/stripe-webhook", async (req: Request, res: Response) => {
+    const sig = req.headers["stripe-signature"];
+    console.log("Type of req.body:", typeof req.body);
+    console.log("Type of sig:", typeof sig);
+
+    if (!sig) {
+        return res.status(400).send("Missing stripe-signature header");
+    }
+
+    let event;
+
+    try {
+        event = stripeClient.webhooks.constructEvent(req.body as Buffer, sig as string, stripeWebhookSecret!);
+    } catch (err: any) {
+        console.error("Error verifying webhook signature:", err.message);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    if (event.type === "invoice.payment_succeeded") {
+        const invoice = event.data.object;
+        const customerId = invoice.customer;
+
+        // Update user status to "paid"
+        try {
+            const user = await User.findOne({ customerId });
+            if (user) {
+                user.status = "paid";
+                await user.save();
+            }
+        } catch (error) {
+            console.error("Error updating user status:", error);
+            return res.status(500).json({ message: "Error updating user status" });
+        }
+    }
+
+    res.status(200).json({ received: true });
+});
+
 
     
 router.post("/logout", (req, res) => {
