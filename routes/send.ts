@@ -12,7 +12,7 @@ import Admin, { IAdmin } from "../models/adminModel.js";
 
 const router = express.Router();
 
-const { accountSid, authToken } = process.env;
+const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN } = process.env;
 const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY!;
