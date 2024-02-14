@@ -17,7 +17,7 @@ const seedDatabase = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield client.connect();
         const taskCategory = client.db("taskifyprodb").collection("categories");
-        yield taskCategory.drop();
+        // await taskCategory.drop();
         const categories = [
             { name: "Frontend Web Application", description: "These are frontend web development projects or tasks", img: "https://res.cloudinary.com/dymd1jkbl/image/upload/v1691953768/taskifypro/web.jpg" },
             { name: "Frontend Mobile Application", description: "These are mobile frontend projects or tasks", img: "https://res.cloudinary.com/dymd1jkbl/image/upload/v1691953768/taskifypro/mobile.jpg" },

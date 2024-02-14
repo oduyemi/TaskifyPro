@@ -10,7 +10,7 @@ const seedDatabase = async () => {
         await client.connect();
         const taskCategory: Collection<any> = client.db("taskifyprodb").collection("categories");
   
-        await taskCategory.drop();
+        // await taskCategory.drop();
 
         const categories = [
           { name: "Frontend Web Application", description: "These are frontend web development projects or tasks", img: "https://res.cloudinary.com/dymd1jkbl/image/upload/v1691953768/taskifypro/web.jpg" },
