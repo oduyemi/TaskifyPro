@@ -47,7 +47,7 @@ var userModel_js_1 = require("../models/userModel.js");
 var adminModel_js_1 = require("../models/adminModel.js");
 var router = express_1["default"].Router();
 var _a = process.env, accountSid = _a.accountSid, authToken = _a.authToken;
-var client = twilio_1["default"](accountSid, authToken);
+var client = twilio_1["default"](TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 var stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 var stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 var stripeClient = new stripe_1["default"](stripeSecretKey, {
